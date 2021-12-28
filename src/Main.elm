@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Element exposing (Attribute, Element, alignTop, centerY, column, el, fill, height, image, inFront, moveDown, moveRight, moveUp, padding, paddingEach, rgb, row, shrink, spacing, table, text, width, wrappedRow)
+import Element exposing (Attribute, Element, alignTop, centerY, column, el, fill, height, image, inFront, moveDown, moveRight, moveUp, padding, paddingEach, paragraph, rgb, shrink, spacing, table, text, width, wrappedRow)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -96,17 +96,17 @@ innerView : Model -> Element Msg
 innerView model =
     let
         header =
-            row [ spacing rythm ]
+            wrappedRow [ spacing rythm ]
                 [ image []
                     { src = "http://www.amsat-nl.org/status/images/AMSAT-NL-Logo320-transparent.png"
                     , description = "AMSAT-NL logo"
                     }
-                , el
+                , paragraph
                     [ Font.bold
                     , fontSizes.huge
                     , moveUp 20
                     ]
-                    (text "FUNcube-1 FM STATUS")
+                    [ text "FUNcube-1 FM STATUS" ]
                 ]
 
         inner =
@@ -133,8 +133,8 @@ viewData : Data -> Element msg
 viewData data =
     wrappedRow [ spacing rythm ]
         [ viewMisc data
-        , viewRf data.rfDTO
         , viewPa data.paDTO
+        , viewRf data.rfDTO
         , viewAnts data.antsDTO
         , viewAsib data.asibDTO
         , viewSw data.swDTO
@@ -305,14 +305,18 @@ formatFloat precision value =
 viewValid : Bool -> Element msg
 viewValid valid =
     let
-        ( color, content ) =
+        ( bgColor, content ) =
             if valid then
-                ( rgb 0 0.7 0, "Valid" )
+                ( rgb 0.1 0.5 0.1, "Valid" )
 
             else
-                ( rgb 1 0 0, "Invalid" )
+                ( rgb 0.5 0.1 0.1, "Invalid" )
     in
-    el [ width fill, height fill, Background.color color ]
+    el
+        [ width fill
+        , height fill
+        , Background.color bgColor
+        ]
         (standardCell [] content)
 
 
@@ -342,6 +346,7 @@ box label data =
         inner =
             el
                 [ Border.width 1
+                , height fill
                 , paddingEach
                     { left = rythm
                     , top = rythm * 5 // 2
@@ -384,6 +389,7 @@ box label data =
                 ]
                 (text label)
         , alignTop
+        , height fill
         ]
         inner
 
