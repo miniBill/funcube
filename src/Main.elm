@@ -177,16 +177,16 @@ viewEps data =
 
 viewAsib : AsibDTO -> Element msg
 viewAsib data =
-    [ ( "sunSensorX", viewFloat 1 data.sunSensorX )
-    , ( "sunSensorY", viewFloat 1 data.sunSensorY )
-    , ( "sunSensorZ", viewFloat 1 data.sunSensorZ )
-    , ( "solXPlus", viewFloat 1 data.solXPlus )
-    , ( "solXMinus", viewFloat 1 data.solXMinus )
-    , ( "solYPlus", viewFloat 1 data.solYPlus )
-    , ( "solYMinus", viewFloat 1 data.solYMinus )
-    , ( "busVolts3v3", viewFloat 1 data.busVolts3v3 )
-    , ( "busCurr3v3", viewFloat 1 data.busCurr3v3 )
-    , ( "busVolts5", viewFloat 1 data.busVolts5 )
+    [ ( "sunSensorX", viewFloat data.sunSensorX )
+    , ( "sunSensorY", viewFloat data.sunSensorY )
+    , ( "sunSensorZ", viewFloat data.sunSensorZ )
+    , ( "solXPlus", viewFloat data.solXPlus )
+    , ( "solXMinus", viewFloat data.solXMinus )
+    , ( "solYPlus", viewFloat data.solYPlus )
+    , ( "solYMinus", viewFloat data.solYMinus )
+    , ( "busVolts3v3", viewFloat data.busVolts3v3 )
+    , ( "busCurr3v3", viewFloat data.busCurr3v3 )
+    , ( "busVolts5", viewFloat data.busVolts5 )
     ]
         |> box "Asib"
 
@@ -195,7 +195,7 @@ viewRf : RfDTO -> Element msg
 viewRf data =
     [ ( "rxDoppler", viewInt data.rxDoppler )
     , ( "rxRSSI", viewInt data.rxRSSI )
-    , ( "rxTemp", viewFloat 1 data.rxTemp )
+    , ( "rxTemp", viewFloat data.rxTemp )
     , ( "rxCurr", viewInt data.rxCurr )
     , ( "txBusCurr3v3", viewInt data.txBusCurr3v3 )
     , ( "txBusCurr5v", viewInt data.txBusCurr5v )
@@ -205,18 +205,18 @@ viewRf data =
 
 viewPa : PaDTO -> Element msg
 viewPa data =
-    [ ( "txRevPwr", viewFloat 1 data.txRevPwr )
-    , ( "txFwdPwr", viewFloat 1 data.txFwdPwr )
-    , ( "txTemp", viewFloat 1 data.txTemp )
-    , ( "txCurr", viewFloat 1 data.txCurr )
+    [ ( "txRevPwr", viewFloat data.txRevPwr )
+    , ( "txFwdPwr", viewFloat data.txFwdPwr )
+    , ( "txTemp", viewFloat data.txTemp )
+    , ( "txCurr", viewFloat data.txCurr )
     ]
         |> box "Pa"
 
 
 viewAnts : AntsDTO -> Element msg
 viewAnts data =
-    [ ( "antTemp0", viewFloat 1 data.antTemp0 )
-    , ( "antTemp1", viewFloat 1 data.antTemp1 )
+    [ ( "antTemp0", viewFloat data.antTemp0 )
+    , ( "antTemp1", viewFloat data.antTemp1 )
     , ( "antDepl0", viewString data.antDepl0 )
     , ( "antDepl1", viewString data.antDepl1 )
     , ( "antDepl2", viewString data.antDepl2 )
@@ -269,9 +269,9 @@ viewInt value =
     standardCell [] <| String.fromInt value
 
 
-viewFloat : Int -> Float -> Element msg
-viewFloat precision value =
-    standardCell [] <| formatFloat precision value
+viewFloat : Float -> Element msg
+viewFloat value =
+    standardCell [] <| formatFloat 1 value
 
 
 viewString : String -> Element msg
