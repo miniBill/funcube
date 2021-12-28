@@ -1,16 +1,15 @@
 module Main exposing (..)
 
 import Browser
-import Element exposing (Attribute, Element, alignTop, centerY, column, el, fill, image, inFront, moveDown, moveRight, moveUp, padding, paddingEach, rgb, row, shrink, spacing, table, text, width, wrappedRow)
+import Element exposing (Attribute, Element, alignTop, centerY, column, el, fill, height, image, inFront, moveDown, moveRight, moveUp, padding, paddingEach, rgb, row, shrink, spacing, table, text, width, wrappedRow)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html exposing (Html)
 import Http exposing (Error(..))
 import Iso8601
-import Json.Decode as JD exposing (Decoder)
-import Json.Decode.Extra
-import Json.Decode.Pipeline as JD
+import Json.Decode as JD
+import Model exposing (AntsDTO, AsibDTO, Data, EpsDTO, PaDTO, RfDTO, SwDTO, dataDecoder)
 import Time
 
 
@@ -145,104 +144,91 @@ viewData data =
 
 viewMisc : Data -> Element msg
 viewMisc data =
-    [ ( "Position"
-      , (if data.latitude > 0 then
-            formatFloat 1 data.latitude ++ " N, "
-
-         else
-            formatFloat 1 -data.latitude ++ " S, "
-        )
-            ++ (if data.longitude > 180 then
-                    formatFloat 1 (360 - data.longitude) ++ " W"
-
-                else
-                    formatFloat 1 data.longitude ++ " E"
-               )
-      )
-    , ( "Packet count", String.fromInt data.packetCount )
-    , ( "Frame type", String.fromInt data.frameType )
-    , ( "Satellite time", formatTimeUtc data.satelliteTime )
-    , ( "Created date", formatTimeUtc data.createdDate )
+    [ ( "Position", viewPosition data )
+    , ( "Packet count", viewInt data.packetCount )
+    , ( "Frame type", viewInt data.frameType )
+    , ( "Satellite time", viewTimeUtc data.satelliteTime )
+    , ( "Created date", viewTimeUtc data.createdDate )
     ]
         |> box "Others"
 
 
 viewEps : EpsDTO -> Element msg
 viewEps data =
-    [ ( "panelVolts1", String.fromInt data.panelVolts1 )
-    , ( "panelVolts2", String.fromInt data.panelVolts2 )
-    , ( "panelVolts3", String.fromInt data.panelVolts3 )
-    , ( "totPhotoCurr", String.fromInt data.totPhotoCurr )
-    , ( "batteryVolts", String.fromInt data.batteryVolts )
-    , ( "totSystemCurr", String.fromInt data.totSystemCurr )
-    , ( "rebootCount", String.fromInt data.rebootCount )
-    , ( "epsSwErrors", String.fromInt data.epsSwErrors )
-    , ( "boostTemp1", String.fromInt data.boostTemp1 )
-    , ( "boostTemp2", String.fromInt data.boostTemp2 )
-    , ( "boostTemp3", String.fromInt data.boostTemp3 )
-    , ( "batteryTemp", String.fromInt data.batteryTemp )
-    , ( "latchUpCount5v", String.fromInt data.latchUpCount5v )
-    , ( "latchUpCount3v3", String.fromInt data.latchUpCount3v3 )
-    , ( "resetCause", String.fromInt data.resetCause )
-    , ( "pptMode", String.fromInt data.pptMode )
+    [ ( "panelVolts1", viewInt data.panelVolts1 )
+    , ( "panelVolts2", viewInt data.panelVolts2 )
+    , ( "panelVolts3", viewInt data.panelVolts3 )
+    , ( "totPhotoCurr", viewInt data.totPhotoCurr )
+    , ( "batteryVolts", viewInt data.batteryVolts )
+    , ( "totSystemCurr", viewInt data.totSystemCurr )
+    , ( "rebootCount", viewInt data.rebootCount )
+    , ( "epsSwErrors", viewInt data.epsSwErrors )
+    , ( "boostTemp1", viewInt data.boostTemp1 )
+    , ( "boostTemp2", viewInt data.boostTemp2 )
+    , ( "boostTemp3", viewInt data.boostTemp3 )
+    , ( "batteryTemp", viewInt data.batteryTemp )
+    , ( "latchUpCount5v", viewInt data.latchUpCount5v )
+    , ( "latchUpCount3v3", viewInt data.latchUpCount3v3 )
+    , ( "resetCause", viewInt data.resetCause )
+    , ( "pptMode", viewInt data.pptMode )
     ]
         |> box "EPS"
 
 
 viewAsib : AsibDTO -> Element msg
 viewAsib data =
-    [ ( "sunSensorX", formatFloat 1 data.sunSensorX )
-    , ( "sunSensorY", formatFloat 1 data.sunSensorY )
-    , ( "sunSensorZ", formatFloat 1 data.sunSensorZ )
-    , ( "solXPlus", formatFloat 1 data.solXPlus )
-    , ( "solXMinus", formatFloat 1 data.solXMinus )
-    , ( "solYPlus", formatFloat 1 data.solYPlus )
-    , ( "solYMinus", formatFloat 1 data.solYMinus )
-    , ( "busVolts3v3", formatFloat 1 data.busVolts3v3 )
-    , ( "busCurr3v3", formatFloat 1 data.busCurr3v3 )
-    , ( "busVolts5", formatFloat 1 data.busVolts5 )
+    [ ( "sunSensorX", viewFloat 1 data.sunSensorX )
+    , ( "sunSensorY", viewFloat 1 data.sunSensorY )
+    , ( "sunSensorZ", viewFloat 1 data.sunSensorZ )
+    , ( "solXPlus", viewFloat 1 data.solXPlus )
+    , ( "solXMinus", viewFloat 1 data.solXMinus )
+    , ( "solYPlus", viewFloat 1 data.solYPlus )
+    , ( "solYMinus", viewFloat 1 data.solYMinus )
+    , ( "busVolts3v3", viewFloat 1 data.busVolts3v3 )
+    , ( "busCurr3v3", viewFloat 1 data.busCurr3v3 )
+    , ( "busVolts5", viewFloat 1 data.busVolts5 )
     ]
         |> box "Asib"
 
 
 viewRf : RfDTO -> Element msg
 viewRf data =
-    [ ( "rxDoppler", String.fromInt data.rxDoppler )
-    , ( "rxRSSI", String.fromInt data.rxRSSI )
-    , ( "rxTemp", formatFloat 1 data.rxTemp )
-    , ( "rxCurr", String.fromInt data.rxCurr )
-    , ( "txBusCurr3v3", String.fromInt data.txBusCurr3v3 )
-    , ( "txBusCurr5v", String.fromInt data.txBusCurr5v )
+    [ ( "rxDoppler", viewInt data.rxDoppler )
+    , ( "rxRSSI", viewInt data.rxRSSI )
+    , ( "rxTemp", viewFloat 1 data.rxTemp )
+    , ( "rxCurr", viewInt data.rxCurr )
+    , ( "txBusCurr3v3", viewInt data.txBusCurr3v3 )
+    , ( "txBusCurr5v", viewInt data.txBusCurr5v )
     ]
         |> box "Rf"
 
 
 viewPa : PaDTO -> Element msg
 viewPa data =
-    [ ( "txRevPwr", formatFloat 1 data.txRevPwr )
-    , ( "txFwdPwr", formatFloat 1 data.txFwdPwr )
-    , ( "txTemp", formatFloat 1 data.txTemp )
-    , ( "txCurr", formatFloat 1 data.txCurr )
+    [ ( "txRevPwr", viewFloat 1 data.txRevPwr )
+    , ( "txFwdPwr", viewFloat 1 data.txFwdPwr )
+    , ( "txTemp", viewFloat 1 data.txTemp )
+    , ( "txCurr", viewFloat 1 data.txCurr )
     ]
         |> box "Pa"
 
 
 viewAnts : AntsDTO -> Element msg
 viewAnts data =
-    [ ( "antTemp0", formatFloat 1 data.antTemp0 )
-    , ( "antTemp1", formatFloat 1 data.antTemp1 )
-    , ( "antDepl0", data.antDepl0 )
-    , ( "antDepl1", data.antDepl1 )
-    , ( "antDepl2", data.antDepl2 )
-    , ( "antDepl3", data.antDepl3 )
+    [ ( "antTemp0", viewFloat 1 data.antTemp0 )
+    , ( "antTemp1", viewFloat 1 data.antTemp1 )
+    , ( "antDepl0", viewString data.antDepl0 )
+    , ( "antDepl1", viewString data.antDepl1 )
+    , ( "antDepl2", viewString data.antDepl2 )
+    , ( "antDepl3", viewString data.antDepl3 )
     ]
         |> box "Ants"
 
 
 viewSw : SwDTO -> Element msg
 viewSw data =
-    [ ( "dtmfCmdCount", String.fromInt data.dtmfCmdCount )
-    , ( "dtmfLastCmd", data.dtmfLastCmd )
+    [ ( "dtmfCmdCount", viewInt data.dtmfCmdCount )
+    , ( "dtmfLastCmd", viewString data.dtmfLastCmd )
     , ( "dtmfCmdSuccess", viewValid data.dtmfCmdSuccess )
     , ( "dataValidASIB", viewValid data.dataValidASIB )
     , ( "dataValidEPS", viewValid data.dataValidEPS )
@@ -264,9 +250,33 @@ viewSw data =
 -- View utilities
 
 
-formatTimeUtc : Time.Posix -> String
-formatTimeUtc =
-    Iso8601.fromTime
+standardCell : List (Attribute msg) -> String -> Element msg
+standardCell attrs =
+    el ([ centerY, padding <| rythm // 2 ] ++ attrs) << text
+
+
+viewTimeUtc : Time.Posix -> Element msg
+viewTimeUtc value =
+    standardCell
+        [ Font.family [ Font.monospace ]
+        , moveDown 2
+        ]
+        (Iso8601.fromTime value)
+
+
+viewInt : Int -> Element msg
+viewInt value =
+    standardCell [] <| String.fromInt value
+
+
+viewFloat : Int -> Float -> Element msg
+viewFloat precision value =
+    standardCell [] <| formatFloat precision value
+
+
+viewString : String -> Element msg
+viewString =
+    standardCell []
 
 
 formatFloat : Int -> Float -> String
@@ -292,16 +302,41 @@ formatFloat precision value =
     beforeDot ++ "." ++ String.right 1 stringInt
 
 
-viewValid : Bool -> String
+viewValid : Bool -> Element msg
 viewValid valid =
-    if valid then
-        "Valid"
+    let
+        ( color, content ) =
+            if valid then
+                ( rgb 0 0.7 0, "Valid" )
 
-    else
-        "Invalid"
+            else
+                ( rgb 1 0 0, "Invalid" )
+    in
+    el [ width fill, height fill, Background.color color ]
+        (standardCell [] content)
 
 
-box : String -> List ( String, String ) -> Element msg
+viewPosition : { a | latitude : Float, longitude : Float } -> Element msg
+viewPosition { latitude, longitude } =
+    let
+        latitudeString =
+            if latitude > 0 then
+                formatFloat 1 latitude ++ " N"
+
+            else
+                formatFloat 1 -latitude ++ " S"
+
+        longitudeString =
+            if longitude > 180 then
+                formatFloat 1 (360 - longitude) ++ " W"
+
+            else
+                formatFloat 1 longitude ++ " E"
+    in
+    standardCell [] <| latitudeString ++ ", " ++ longitudeString
+
+
+box : String -> List ( String, Element msg ) -> Element msg
 box label data =
     let
         inner =
@@ -314,29 +349,18 @@ box label data =
                     , bottom = rythm
                     }
                 ]
-                (table
-                    [ width fill
-                    , spacing rythm
-                    ]
+                (table [ width fill ]
                     { data = data
                     , columns =
                         [ { view =
-                                Tuple.first
-                                    >> text
-                                    >> el [ centerY ]
+                                \( rowLabel, _ ) ->
+                                    rowLabel
+                                        |> text
+                                        |> el [ centerY, padding <| rythm // 2 ]
                           , header = Element.none
                           , width = shrink
                           }
-                        , { view =
-                                Tuple.second
-                                    >> text
-                                    >> el
-                                        [ Font.alignRight
-                                        , width fill
-                                        , Font.family [ Font.monospace ]
-                                        , centerY
-                                        , moveDown 2
-                                        ]
+                        , { view = Tuple.second
                           , header = Element.none
                           , width = fill
                           }
@@ -422,253 +446,3 @@ httpErrorToString error =
                     "Bad body"
     in
     "Error in server answer"
-
-
-
--- Data structures and decoders
-
-
-type alias Data =
-    { latitude : Float
-    , longitude : Float
-    , packetCount : Int
-    , epsDTO : EpsDTO
-    , frameType : Int
-    , satelliteTime : Time.Posix
-    , createdDate : Time.Posix
-    , asibDTO : AsibDTO
-    , rfDTO : RfDTO
-    , paDTO : PaDTO
-    , antsDTO : AntsDTO
-    , swDTO : SwDTO
-    }
-
-
-dataDecoder : Decoder Data
-dataDecoder =
-    JD.field "data"
-        (JD.succeed Data
-            |> JD.required "latitude" JD.float
-            |> JD.required "longitude" JD.float
-            |> JD.required "packetCount" JD.int
-            |> JD.required "epsDTO" epsDTODecoder
-            |> JD.required "frameType" JD.int
-            |> JD.required "satelliteTime" timestampDecoder
-            |> JD.required "createdDate" timestampDecoder
-            |> JD.required "asibDTO" asibDTODecoder
-            |> JD.required "rfDTO" rfDTODecoder
-            |> JD.required "paDTO" paDTODecoder
-            |> JD.required "antsDTO" antsDTODecoder
-            |> JD.required "swDTO" swDTODecoder
-        )
-
-
-type alias EpsDTO =
-    { panelVolts1 : Int
-    , panelVolts2 : Int
-    , panelVolts3 : Int
-    , totPhotoCurr : Int
-    , batteryVolts : Int
-    , totSystemCurr : Int
-    , rebootCount : Int
-    , epsSwErrors : Int
-    , boostTemp1 : Int
-    , boostTemp2 : Int
-    , boostTemp3 : Int
-    , batteryTemp : Int
-    , latchUpCount5v : Int
-    , latchUpCount3v3 : Int
-    , resetCause : Int
-    , pptMode : Int
-    }
-
-
-epsDTODecoder : Decoder EpsDTO
-epsDTODecoder =
-    JD.succeed EpsDTO
-        |> JD.required "panelVolts1" JD.int
-        |> JD.required "panelVolts2" JD.int
-        |> JD.required "panelVolts3" JD.int
-        |> JD.required "totPhotoCurr" JD.int
-        |> JD.required "batteryVolts" JD.int
-        |> JD.required "totSystemCurr" JD.int
-        |> JD.required "rebootCount" JD.int
-        |> JD.required "epsSwErrors" JD.int
-        |> JD.required "boostTemp1" JD.int
-        |> JD.required "boostTemp2" JD.int
-        |> JD.required "boostTemp3" JD.int
-        |> JD.required "batteryTemp" JD.int
-        |> JD.required "latchUpCount5v" JD.int
-        |> JD.required "latchUpCount3v3" JD.int
-        |> JD.required "resetCause" JD.int
-        |> JD.required "pptMode" JD.int
-
-
-type alias AsibDTO =
-    { sunSensorX : Float
-    , sunSensorY : Float
-    , sunSensorZ : Float
-    , solXPlus : Float
-    , solXMinus : Float
-    , solYPlus : Float
-    , solYMinus : Float
-    , busVolts3v3 : Float
-    , busCurr3v3 : Float
-    , busVolts5 : Float
-    }
-
-
-asibDTODecoder : Decoder AsibDTO
-asibDTODecoder =
-    JD.succeed AsibDTO
-        |> JD.required "sunSensorX" Json.Decode.Extra.parseFloat
-        |> JD.required "sunSensorY" Json.Decode.Extra.parseFloat
-        |> JD.required "sunSensorZ" Json.Decode.Extra.parseFloat
-        |> JD.required "solXPlus" Json.Decode.Extra.parseFloat
-        |> JD.required "solXMinus" Json.Decode.Extra.parseFloat
-        |> JD.required "solYPlus" Json.Decode.Extra.parseFloat
-        |> JD.required "solYMinus" Json.Decode.Extra.parseFloat
-        |> JD.required "busVolts3v3" Json.Decode.Extra.parseFloat
-        |> JD.required "busCurr3v3" Json.Decode.Extra.parseFloat
-        |> JD.required "busVolts5" Json.Decode.Extra.parseFloat
-
-
-type alias RfDTO =
-    { rxDoppler : Int
-    , rxRSSI : Int
-    , rxTemp : Float
-    , rxCurr : Int
-    , txBusCurr3v3 : Int
-    , txBusCurr5v : Int
-    }
-
-
-rfDTODecoder : Decoder RfDTO
-rfDTODecoder =
-    JD.succeed RfDTO
-        |> JD.required "rxDoppler" JD.int
-        |> JD.required "rxRSSI" JD.int
-        |> JD.required "rxTemp" Json.Decode.Extra.parseFloat
-        |> JD.required "rxCurr" JD.int
-        |> JD.required "txBusCurr3v3" JD.int
-        |> JD.required "txBusCurr5v" JD.int
-
-
-type alias PaDTO =
-    { txRevPwr : Float
-    , txFwdPwr : Float
-    , txTemp : Float
-    , txCurr : Float
-    }
-
-
-paDTODecoder : Decoder PaDTO
-paDTODecoder =
-    JD.succeed PaDTO
-        |> JD.required "txRevPwr" Json.Decode.Extra.parseFloat
-        |> JD.required "txFwdPwr" Json.Decode.Extra.parseFloat
-        |> JD.required "txTemp" Json.Decode.Extra.parseFloat
-        |> JD.required "txCurr" Json.Decode.Extra.parseFloat
-
-
-type alias AntsDTO =
-    { antTemp0 : Float
-    , antTemp1 : Float
-    , antDepl0 : String
-    , antDepl1 : String
-    , antDepl2 : String
-    , antDepl3 : String
-    }
-
-
-antsDTODecoder : Decoder AntsDTO
-antsDTODecoder =
-    JD.succeed AntsDTO
-        |> JD.required "antTemp0" Json.Decode.Extra.parseFloat
-        |> JD.required "antTemp1" Json.Decode.Extra.parseFloat
-        |> JD.required "antDepl0" JD.string
-        |> JD.required "antDepl1" JD.string
-        |> JD.required "antDepl2" JD.string
-        |> JD.required "antDepl3" JD.string
-
-
-type alias SwDTO =
-    { dtmfCmdCount : Int
-    , dtmfLastCmd : String
-    , dtmfCmdSuccess : Bool
-    , dataValidASIB : Bool
-    , dataValidEPS : Bool
-    , dataValidPA : Bool
-    , dataValidRF : Bool
-    , dataValidiMTQ : Bool
-    , dataValidAntsBusB : Bool
-    , dataValidAntsBusA : Bool
-    , inEclipseMode : Bool
-    , inSafeMode : Bool
-    , hardwareABFOnOff : Bool
-    , softwareABFOnOff : Bool
-    , deploymentWait : Bool
-    }
-
-
-swDTODecoder : Decoder SwDTO
-swDTODecoder =
-    JD.succeed SwDTO
-        |> JD.required "dtmfCmdCount" JD.int
-        |> JD.required "dtmfLastCmd" JD.string
-        |> JD.required "dtmfCmdSuccess" boolDecoder
-        |> JD.required "dataValidASIB" boolDecoder
-        |> JD.required "dataValidEPS" boolDecoder
-        |> JD.required "dataValidPA" boolDecoder
-        |> JD.required "dataValidRF" boolDecoder
-        |> JD.required "dataValidiMTQ" boolDecoder
-        |> JD.required "dataValidAntsBusB" boolDecoder
-        |> JD.required "dataValidAntsBusA" boolDecoder
-        |> JD.required "inEclipseMode" boolDecoder
-        |> JD.required "inSafeMode" boolDecoder
-        |> JD.required "hardwareABFOnOff" boolDecoder
-        |> JD.required "softwareABFOnOff" boolDecoder
-        |> JD.required "deploymentWait" boolDecoder
-
-
-boolDecoder : Decoder Bool
-boolDecoder =
-    JD.string
-        |> JD.andThen
-            (\b ->
-                case String.toUpper b of
-                    "YES" ->
-                        JD.succeed True
-
-                    "ON" ->
-                        JD.succeed True
-
-                    "NO" ->
-                        JD.succeed False
-
-                    "OFF" ->
-                        JD.succeed False
-
-                    _ ->
-                        JD.fail <| "Unexpected boolean: " ++ b
-            )
-
-
-timestampDecoder : Decoder Time.Posix
-timestampDecoder =
-    JD.string
-        |> JD.andThen
-            (\timestamp ->
-                timestamp
-                    |> String.replace "Data received: " ""
-                    |> String.replace " " "T"
-                    |> Iso8601.toTime
-                    |> (\r ->
-                            case r of
-                                Ok o ->
-                                    JD.succeed o
-
-                                Err _ ->
-                                    JD.fail <| "Failed to parse timestamp " ++ timestamp
-                       )
-            )
